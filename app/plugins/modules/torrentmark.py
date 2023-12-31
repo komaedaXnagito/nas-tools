@@ -182,13 +182,17 @@ class TorrentMark(_IPluginModule):
                 pt_flag = self.__isPt(torrent, downloader_type)
                 torrent_tags.discard("")
                 if pt_flag is True:
-                    torrent_tags.discard("BT")
-                    torrent_tags.add("PT")
-                    self.downloader.set_torrents_tag(downloader_id=downloader, ids=hash_str, tags=list(torrent_tags))
+                    # torrent_tags.discard("BT")
+                    # torrent_tags.add("PT")
+                    torrent.add_tags("PT")
+                    torrent.remove_tags("BT")
+                    # self.downloader.set_torrents_tag(downloader_id=downloader, ids=hash_str, tags=list(torrent_tags))
                 else:
-                    torrent_tags.add("BT")
-                    torrent_tags.discard("PT")
-                    self.downloader.set_torrents_tag(downloader_id=downloader, ids=hash_str, tags=list(torrent_tags))
+                    torrent.add_tags("BT")
+                    torrent.remove_tags("PT")
+                name = torrent.get('name')
+                self.info(f"{name} 完成打标")
+                # self.downloader.set_torrents_tag(downloader_id=downloader, ids=hash_str, tags=list(torrent_tags))
         self.info("标记任务执行完成")
 
     @staticmethod
@@ -208,7 +212,8 @@ class TorrentMark(_IPluginModule):
         获取种子标签
         """
         try:
-            return list(map(lambda s: s.strip(), (torrent.get("tags") or "").split(","))) if dl_type == DownloaderType.QB else torrent.labels or []
+            return list(map(lambda s: s.strip(), (torrent.get("tags") or "").split(
+                ","))) if dl_type == DownloaderType.QB else torrent.labels or []
         except Exception as e:
             print(str(e))
             return []
@@ -228,7 +233,7 @@ class TorrentMark(_IPluginModule):
                 tracker_list = list(map(lambda s: s['announce'], torrent.trackers or []))
             if len(tracker_list) == 1:
                 if tracker_list[0].find("secure=") != -1 \
-                    or tracker_list[0].find("passkey=") != -1 \
+                        or tracker_list[0].find("passkey=") != -1 \
                         or tracker_list[0].find("totheglory") != -1:
                     return True
             else:
